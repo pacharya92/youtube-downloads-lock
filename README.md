@@ -2,6 +2,11 @@
 
 This Chrome extension is a **companion productivity tool** designed to work alongside other applications and extensions to help **reclaim your time** and **cut down on endless scrolling**.
 
+- Works best when paired with:
+  - App timers like FocusMe / Freedom / StayFocusd
+  - Host file edits
+  - Screen time tracking
+
 ## 🧠 What It Does
 
 This extension **removes the “Downloads Settings” button** from the YouTube Downloads page:
@@ -39,10 +44,6 @@ This extension plays a small but mighty role in your larger system of digital se
 
 - Google Chrome
 - Only affects `https://www.youtube.com/feed/downloads`
-- Works best when paired with:
-  - App timers like FocusMe / Freedom / StayFocusd
-  - Host file edits
-  - Screen time tracking
 
 ## 🚀 Installation
 
