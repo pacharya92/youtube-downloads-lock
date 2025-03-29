@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Cleaner Lock",
+  "description": "Deletes elements from the YouTube Downloads page and locks for 1 hour.",
+  "version": "1.0",
+  "permissions": ["tabs", "scripting", "storage"],
+  "host_permissions": ["https://www.youtube.com/feed/downloads*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Activate Cleaner"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/feed/downloads*"],
+      "js": ["content.js"]
+    }
+  ]
+}
