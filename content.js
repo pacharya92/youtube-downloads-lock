@@ -1,5 +1,6 @@
 // On page load, check if a lock is active and start the cleaner if so
 checkLockAndRun()
+removeToggleButton()
 
 // Add a global click blocker to catch early clicks during race conditions
 addGlobalClickBlocker()
@@ -7,6 +8,7 @@ addGlobalClickBlocker()
 // Also respond to the custom event fired by the popup
 window.addEventListener('activate-cleaner', () => {
   checkLockAndRun()
+  removeToggleButton()
 })
 
 /**
@@ -28,35 +30,32 @@ function checkLockAndRun() {
  */
 function startCleaner() {
   const interval = setInterval(() => {
-    // Select all anchor tags that link to the Downloads Settings page
-    const links = document.querySelectorAll('a[href="/account_downloads"]')
+    try {
+      const links = document.querySelectorAll('a[href="/account_downloads"]')
 
-    links.forEach((link) => {
-      // Avoid replacing the same link multiple times
-      if (!link.dataset.replaced) {
-        // Create a disabled button with a lock message
-        const replacement = document.createElement('button')
-        replacement.textContent = 'Currently blocking changing the download settings'
-        replacement.disabled = true
+      links.forEach((link) => {
+        if (!link.dataset.replaced) {
+          const replacement = document.createElement('button')
+          replacement.textContent = 'Currently blocking changing the download settings'
+          replacement.disabled = true
 
-        // Apply minimal YouTube-style button styling
-        replacement.style.background = '#ccc'
-        replacement.style.border = 'none'
-        replacement.style.padding = '8px'
-        replacement.style.borderRadius = '4px'
-        replacement.style.color = '#000'
-        replacement.style.fontSize = '12px'
-        replacement.style.cursor = 'not-allowed'
-        replacement.style.maxWidth = '240px'
+          replacement.style.background = '#ccc'
+          replacement.style.border = 'none'
+          replacement.style.padding = '8px'
+          replacement.style.borderRadius = '4px'
+          replacement.style.color = '#000'
+          replacement.style.fontSize = '12px'
+          replacement.style.cursor = 'not-allowed'
+          replacement.style.maxWidth = '240px'
+          replacement.dataset.replaced = 'true'
 
-        // Mark it as replaced so we don’t touch it again
-        replacement.dataset.replaced = 'true'
-
-        // Replace the original <a> link with our custom button
-        link.replaceWith(replacement)
-      }
-    })
-  }, 2000) // Re-run every 2 seconds in case YouTube re-renders the DOM
+          link.replaceWith(replacement)
+        }
+      })
+    } catch (err) {
+      console.warn('Cleaner loop failed:', err)
+    }
+  }, 2000)
 
   // Optional: stop checking after 1 hour
   setTimeout(() => clearInterval(interval), 3600000)
@@ -71,22 +70,50 @@ function addGlobalClickBlocker() {
   document.addEventListener(
     'click',
     (e) => {
-      chrome.storage.local.get(['lockedUntil'], (result) => {
-        const now = Date.now()
-        if (result.lockedUntil && now < result.lockedUntil) {
-          // Check if the click target or one of its parents is the settings link
-          const target = e.target.closest('a[href="/account_downloads"]')
-          if (target) {
-            // Stop the navigation before it happens
-            e.preventDefault()
-            e.stopImmediatePropagation()
-
-            // Optional user feedback
-            alert('Settings are blocked for 1 hour.')
+      try {
+        chrome.storage.local.get(['lockedUntil'], (result) => {
+          const now = Date.now()
+          if (result.lockedUntil && now < result.lockedUntil) {
+            const target = e.target.closest('a[href="/account_downloads"]')
+            if (target) {
+              e.preventDefault()
+              e.stopImmediatePropagation()
+              alert('Settings are blocked for 1 hour.')
+            }
           }
-        }
-      })
+        })
+      } catch (err) {
+        // Silently catch the error if the context has been invalidated
+        console.warn('Extension context invalidated:', err)
+      }
     },
     true
-  ) // Capture phase is crucial here
+  )
+}
+
+function removeToggleButton() {
+  const tryRemove = () => {
+    const toggleButton = document.getElementById('toggle')
+    const toggleBar = document.getElementById('toggleBar')
+
+    if (toggleButton) {
+      toggleButton.remove()
+      return true
+    }
+    if (toggleBar) {
+      toggleButton.remove()
+      return true
+    }
+    return false
+  }
+
+  if (!tryRemove()) {
+    const interval = setInterval(() => {
+      if (tryRemove()) {
+        clearInterval(interval)
+      }
+    }, 500)
+
+    setTimeout(() => clearInterval(interval), 10000) // stop after 10 seconds
+  }
 }
