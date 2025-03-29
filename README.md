@@ -53,7 +53,7 @@ This extension plays a small but mighty role in your larger system of digital se
 
 ## 🛠 Features Coming Soon (maybe 😉)
 
-- Visual countdown timer on the blocked button
+- ~~Visual countdown timer on the blocked button~~
 - Badge icon for lock state
 - Stronger enforcement using MutationObserver
 - Optional auto-refresh when the lock expires
